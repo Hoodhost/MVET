@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="icon" type="image/x-icon" href="C:\Users\nestess\OneDrive - Hood Industries, Inc\Pictures\ICO's\MVET.ico">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hood Mill Visit Email Tool</title>
+    <style>
+        header {
+    margin-bottom:50px; /* Adds space below the header */
+        }
+                .logo-header {
+            max-width: 180px;
+            height: auto;
+            transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth animation for both */
+        }
+        
+        .logo-header:hover {
+            transform: translateY(-1px); /* Moves the image up slightly */
+            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2); /* Adds a shadow for a lifted effect */
+        }
+   /* General Styles */
+body {
+    background-color: #F0F2F5; /* Meta's neutral light background */
+    font-family: 'Inter', sans-serif; /* Modern, clean typography */
+    margin: 0;
+    padding: 20px;
+}
+
+/* Form Card */
+form {
+    background: linear-gradient(to bottom right, #FFFFFF, #E4E6EB); /* Subtle gradient */
+    padding: 20px;
+    border-radius: 16px; /* Rounded corners */
+    box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.15); /* Soft elevation */
+    max-width: 320px;
+    margin: auto;
+    transition: transform 0.3s ease;
+}
+
+/* Form Hover Effect */
+form:hover {
+    transform: translateY(-4px); /* Gentle lift */
+}
+
+/* Form Title */
+h1 {
+    color: #e05b03; /* Meta blue */
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 16px;
+}
+
+/* Input Fields */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select,
+input[type="date"] {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 10px;
+    background-color: #F5F6FA; /* Light, modern UI background */
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: background 0.3s ease;
+}
+
+/* Focus Effect */
+input:focus,
+select:focus {
+    background-color: #E4E6EB; /* Subtle focus change */
+    outline: none;
+}
+
+/* Submit Button */
+button {
+    background: linear-gradient(to right, #f26818, #e56216); /* Meta blue gradient */
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 32px; /* Soft round shape */
+    cursor: pointer;
+    font-size: 18px;
+    width: 100%;
+    margin-top: 12px;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+/* Button Hover */
+button:hover {
+    background: linear-gradient(to right, #e56216, #b86b13);
+    transform: scale(1.03); /* Subtle button enlargement */
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(to bottom right, #FFFFFF, #E4E6EB); /* Smooth gradient */
+    border-radius: 16px;
+    box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.2);
+    padding: 24px;
+    text-align: center;
+    z-index: 1000;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4); /* Soft dim */
+    z-index: 999;
+}
+.footer {
+    background-color: rgba(240, 240, 240, 0.9); /* Light background color */
+    padding: 20px; /* Space inside the footer */
+    text-align: center; /* Center the text */
+    font-size: 14px; /* Smaller font for footer text */
+    color: #1d1d1f; /* Neutral text color */
+    border-top: 1px solid rgba(0, 0, 0, 0.1); /* Subtle top border */
+    position: absolute; /* Make the footer stick to the bottom */
+    bottom: 0;
+    width: 100%; /* Ensure the footer spans the full width */
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1); /* Add a slight shadow for a polished look */
+}
+    </style>
+    <script>
+        function openConfirmationModal() {
+            const modal = document.getElementById("confirmationModal");
+            const overlay = document.getElementById("modalOverlay");
+            modal.style.display = "block";
+            overlay.style.display = "block";
+        }
+
+        function closeConfirmationModal(confirmAction) {
+            const modal = document.getElementById("confirmationModal");
+            const overlay = document.getElementById("modalOverlay");
+            modal.style.display = "none";
+            overlay.style.display = "none";
+
+            if (confirmAction) {
+                generateEmail();
+            }
+        }
+
+        function generateEmail() {
+            const millLocation = document.getElementById("location").value;
+            const time = document.getElementById("time").value;
+            const dateInput = document.getElementById("date").value;
+            const recipient = document.getElementById("recipient").value;
+
+            const bccMap = {
+                "Beaumont": "HoodBeau@Hoodindustries.com",
+                "Bogalusa": "HoodBogla@Hoodindustries.com",
+                "Silver Creek": "Hoodsilv@Hoodindustries.com",
+                "Waynesboro": "Hoodwayn@Hoodindustries.com",
+                "Wiggins": "Hoodwigg@Hoodindustries.com"
+            };
+
+            const recipientMap = {
+                "Kily": "AGarcia@hoodindustries.com",
+                "Nic": "Nestess@hoodindustries.com"
+            };
+
+            if (!millLocation || !time || !dateInput || !recipient) {
+                alert("Please complete all fields before generating the email.");
+                return;
+            }
+
+            const dateObj = new Date(dateInput);
+            dateObj.setDate(dateObj.getDate() + 1);
+
+            const options = { weekday: 'long' };
+            const dayOfWeek = new Intl.DateTimeFormat('en-US', options).format(dateObj);
+            const formattedDate = `${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getDate().toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
+
+            const emailBody = `Dear ${millLocation} Employees,%0D%0A%0D%0A` +
+                `I will be visiting the mill on ${dayOfWeek}, ${formattedDate} during the ${time} hours.%0D%0A%0D%0A` +
+                `Please let me know if there are any technical issues/requests related to IT, I will be taking care of those during that time.%0D%0A%0D%0A` +
+                `Please email me directly or email hoodit@hoodindustries.com to create a ticket automatically.`;
+
+            const to = recipientMap[recipient];
+            const bcc = `Nestess@hoodindustries.com,calexand@hoodindustries.com,agarcia@hoodindustries.com,${bccMap[millLocation]}`;
+            const mailtoLink = `mailto:${to}?bcc=${bcc}&subject=IT Mill Visit Notification&body=${emailBody}`;
+
+            window.open(mailtoLink, '_blank');
+            window.location.reload();
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <img src="https://raw.githubusercontent.com/Hoodhost/QRGen/refs/heads/main/Hood%20horizontal%20Logo.png" alt="Logo" class="logo-header" onclick="refreshPage()">
+    </header>
+    <div class="container">
+        <form>
+            <h1>Hood Mill Visit Email Tool</h1>
+            <label for="recipient">Sender:</label><br>
+            <select id="recipient" required>
+                <option value="">--Select Recipient--</option>
+                <option value="Kily">Kily</option>
+                <option value="Nic">Nic</option>
+                <br><br>
+            </select>
+            <label for="location">Choose Location:</label><br>
+            <select id="location" required>
+                <option value="">--Select Location--</option>
+                <option value="Beaumont">Beaumont</option>
+                <option value="Bogalusa">Bogalusa</option>
+                <option value="Silver Creek">Silver Creek</option>
+                <option value="Waynesboro">Waynesboro</option>
+                <option value="Wiggins">Wiggins</option>
+            </select>
+            <br><br>
+            <label for="time">Choose Time:</label><br>
+            <select id="time" required>
+                <option value="">--Select Time--</option>
+                <option value="morning">Morning</option>
+                <option value="evening">Evening</option>
+            </select>
+            <br><br>
+            <label for="date">Choose Date:</label><br>
+            <input type="date" id="date" required>
+            <br><br>
+            <button type="button" onclick="openConfirmationModal()">Generate Email</button>
+        </form>
+    </div>
+
+    <div id="modalOverlay" class="modal-overlay"></div>
+
+    <div id="confirmationModal" class="modal">
+        <p>Are you sure?</p>
+        <button onclick="closeConfirmationModal(true)">Yes</button>
+        <button onclick="closeConfirmationModal(false)">No</button>
+    </div>
+
+    <footer class="footer">
+        <p>© 2025 Hood Industries. All rights reserved.</p>
+    </footer>
+</body>
+</html>
