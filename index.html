@@ -7,9 +7,12 @@
     <title>Hood Mill Visit Email Tool</title>
     <style>
         header {
-    margin-bottom:50px; /* Adds space below the header */
+            margin-bottom: 50px; /* Adds space below the header */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
-                .logo-header {
+        .logo-header {
             max-width: 180px;
             height: auto;
             transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth animation for both */
@@ -19,121 +22,127 @@
             transform: translateY(-1px); /* Moves the image up slightly */
             box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2); /* Adds a shadow for a lifted effect */
         }
-   /* General Styles */
-body {
-    background-color: #F0F2F5; /* Meta's neutral light background */
-    font-family: 'Inter', sans-serif; /* Modern, clean typography */
-    margin: 0;
-    padding: 20px;
-}
-
-/* Form Card */
-form {
-    background: linear-gradient(to bottom right, #FFFFFF, #E4E6EB); /* Subtle gradient */
-    padding: 20px;
-    border-radius: 16px; /* Rounded corners */
-    box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.15); /* Soft elevation */
-    max-width: 320px;
-    margin: auto;
-    transition: transform 0.3s ease;
-}
-
-/* Form Hover Effect */
-form:hover {
-    transform: translateY(-4px); /* Gentle lift */
-}
-
-/* Form Title */
-h1 {
-    color: #e05b03; /* Meta blue */
-    text-align: center;
-    font-size: 22px;
-    margin-bottom: 16px;
-}
-
-/* Input Fields */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-textarea,
-select,
-input[type="date"] {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border: none;
-    border-radius: 10px;
-    background-color: #F5F6FA; /* Light, modern UI background */
-    font-size: 16px;
-    box-sizing: border-box;
-    transition: background 0.3s ease;
-}
-
-/* Focus Effect */
-input:focus,
-select:focus {
-    background-color: #E4E6EB; /* Subtle focus change */
-    outline: none;
-}
-
-/* Submit Button */
-button {
-    background: linear-gradient(to right, #f26818, #e56216); /* Meta blue gradient */
-    color: white;
-    padding: 12px;
-    border: none;
-    border-radius: 32px; /* Soft round shape */
-    cursor: pointer;
-    font-size: 18px;
-    width: 100%;
-    margin-top: 12px;
-    transition: background 0.3s ease, transform 0.2s ease;
-}
-
-/* Button Hover */
-button:hover {
-    background: linear-gradient(to right, #e56216, #b86b13);
-    transform: scale(1.03); /* Subtle button enlargement */
-}
-
-/* Modal */
-.modal {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: linear-gradient(to bottom right, #FFFFFF, #E4E6EB); /* Smooth gradient */
-    border-radius: 16px;
-    box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.2);
-    padding: 24px;
-    text-align: center;
-    z-index: 1000;
-}
-
-/* Modal Overlay */
-.modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.4); /* Soft dim */
-    z-index: 999;
-}
-.footer {
-    background-color: rgba(240, 240, 240, 0.9); /* Light background color */
-    padding: 20px; /* Space inside the footer */
-    text-align: center; /* Center the text */
-    font-size: 14px; /* Smaller font for footer text */
-    color: #1d1d1f; /* Neutral text color */
-    border-top: 1px solid rgba(0, 0, 0, 0.1); /* Subtle top border */
-    position: absolute; /* Make the footer stick to the bottom */
-    bottom: 0;
-    width: 100%; /* Ensure the footer spans the full width */
-    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1); /* Add a slight shadow for a polished look */
-}
+        .report-button {
+            background: linear-gradient(to right, #f26818, #e56216); /* Meta blue gradient */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 32px; /* Soft round shape */
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+        .report-button:hover {
+            background: linear-gradient(to right, #e56216, #b86b13);
+            transform: scale(1.03); /* Subtle button enlargement */
+        }
+        /* General Styles */
+        body {
+            background-color: #F0F2F5; /* Meta's neutral light background */
+            font-family: 'Inter', sans-serif; /* Modern, clean typography */
+            margin: 0;
+            padding: 20px;
+        }
+        /* Form Card */
+        form {
+            background: linear-gradient(to bottom right, #FFFFFF, #E4E6EB); /* Subtle gradient */
+            padding: 20px;
+            border-radius: 16px; /* Rounded corners */
+            box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.15); /* Soft elevation */
+            max-width: 320px;
+            margin: auto;
+            transition: transform 0.3s ease;
+        }
+        /* Form Hover Effect */
+        form:hover {
+            transform: translateY(-4px); /* Gentle lift */
+        }
+        /* Form Title */
+        h1 {
+            color: #e05b03; /* Meta blue */
+            text-align: center;
+            font-size: 22px;
+            margin-bottom: 16px;
+        }
+        /* Input Fields */
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        textarea,
+        select,
+        input[type="date"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 10px;
+            background-color: #F5F6FA; /* Light, modern UI background */
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: background 0.3s ease;
+        }
+        /* Focus Effect */
+        input:focus,
+        select:focus {
+            background-color: #E4E6EB; /* Subtle focus change */
+            outline: none;
+        }
+        /* Submit Button */
+        button {
+            background: linear-gradient(to right, #f26818, #e56216); /* Meta blue gradient */
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 32px; /* Soft round shape */
+            cursor: pointer;
+            font-size: 18px;
+            width: 100%;
+            margin-top: 12px;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+        /* Button Hover */
+        button:hover {
+            background: linear-gradient(to right, #e56216, #b86b13);
+            transform: scale(1.03); /* Subtle button enlargement */
+        }
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(to bottom right, #FFFFFF, #E4E6EB); /* Smooth gradient */
+            border-radius: 16px;
+            box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.2);
+            padding: 24px;
+            text-align: center;
+            z-index: 1000;
+        }
+        /* Modal Overlay */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4); /* Soft dim */
+            z-index: 999;
+        }
+        .footer {
+            background-color: rgba(240, 240, 240, 0.9); /* Light background color */
+            padding: 20px; /* Space inside the footer */
+            text-align: center; /* Center the text */
+            font-size: 14px; /* Smaller font for footer text */
+            color: #1d1d1f; /* Neutral text color */
+            border-top: 1px solid rgba(0, 0, 0, 0.1); /* Subtle top border */
+            position: absolute; /* Make the footer stick to the bottom */
+            bottom: 0;
+            width: 100%; /* Ensure the footer spans the full width */
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1); /* Add a slight shadow for a polished look */
+        }
     </style>
     <script>
         function openConfirmationModal() {
@@ -202,6 +211,7 @@ button:hover {
 <body>
     <header>
         <img src="https://raw.githubusercontent.com/Hoodhost/QRGen/refs/heads/main/Hood%20horizontal%20Logo.png" alt="Logo" class="logo-header" onclick="refreshPage()">
+        <a href="Report Log.html" class="report-button">View Report Log</a>
     </header>
     <div class="container">
         <form>
