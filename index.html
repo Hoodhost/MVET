@@ -7,35 +7,44 @@
     <title>Hood Mill Visit Email Tool</title>
     <style>
         header {
-            margin-bottom: 50px; /* Adds space below the header */
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start; /* Align header to the left */
+            margin-bottom: 50px; /* Adds space below the header */
         }
         .logo-header {
             max-width: 180px;
             height: auto;
             transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth animation for both */
+            margin-right: 16px; /* Space between logo and buttons */
         }
         
         .logo-header:hover {
             transform: translateY(-1px); /* Moves the image up slightly */
             box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2); /* Adds a shadow for a lifted effect */
         }
-        .report-button {
-            background: linear-gradient(to right, #f26818, #e56216); /* Meta blue gradient */
-            color: white;
-            padding: 10px 20px;
+        .header-btn {
+            background: none;
+            color: #000; /* Black text */
+            padding: 12px;
             border: none;
-            border-radius: 32px; /* Soft round shape */
+            border-radius: 32px;
             cursor: pointer;
-            font-size: 16px;
-            text-decoration: none;
-            transition: background 0.3s ease, transform 0.2s ease;
+            font-size: 18px;
+            min-width: 100px;
+            transition: color 0.3s ease, transform 0.2s ease;
+            text-decoration: none; /* Ensure no underline for anchor tags */
         }
-        .report-button:hover {
-            background: linear-gradient(to right, #e56216, #b86b13);
-            transform: scale(1.03); /* Subtle button enlargement */
+        .header-btn:hover {
+            color: #e05b03; /* Matches hover color of other buttons */
+            background: none; /* No background on hover */
+            transform: scale(1.03);
+        }
+        .space-x-2 > * {
+            margin-right: 8px;
+        }
+        .space-x-2 > *:last-child {
+            margin-right: 0;
         }
         /* General Styles */
         body {
@@ -43,6 +52,10 @@
             font-family: 'Inter', sans-serif; /* Modern, clean typography */
             margin: 0;
             padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
         /* Form Card */
         form {
@@ -206,12 +219,19 @@
             window.open(mailtoLink, '_blank');
             window.location.reload();
         }
+
+        function refreshPage() {
+            window.location.reload();
+        }
     </script>
 </head>
 <body>
     <header>
         <img src="https://raw.githubusercontent.com/Hoodhost/QRGen/refs/heads/main/Hood%20horizontal%20Logo.png" alt="Logo" class="logo-header" onclick="refreshPage()">
-        <a href="Report Log.html" class="report-button">View Report Log</a>
+        <div class="space-x-2">
+            <a href="Dashboard.html" class="header-btn">Dashboard</a>
+            <a href="Report Log.html" class="header-btn">Report Log</a>
+        </div>
     </header>
     <div class="container">
         <form>
@@ -221,7 +241,6 @@
                 <option value="">--Select Recipient--</option>
                 <option value="Kily">Kily</option>
                 <option value="Nic">Nic</option>
-                <br><br>
             </select>
             <label for="location">Choose Location:</label><br>
             <select id="location" required>
