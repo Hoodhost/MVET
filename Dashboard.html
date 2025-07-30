@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .bucket-card {
+            transition: all 0.3s ease;
+        }
+        .bucket-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .note-item {
+            transition: background-color 0.2s ease;
+        }
+        .note-item:hover {
+            background-color: #f1f5f9;
+        }
+        .edit-mode .bucket-card {
+            cursor: move;
+            border: 2px dashed #3b82f6;
+            background-color: #eff6ff;
+        }
+        .edit-mode .bucket-card.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+        .edit-mode .note-item,
+        .edit-mode input {
+            pointer-events: none;
+        }
+        .add-bucket-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            line-height: 1;
+        }
+        .delete-bucket-btn {
+            display: none;
+        }
+        .edit-mode .delete-bucket-btn {
+            display: inline-block;
+        }
+        #chartContainer {
+            transition: all 0.3s ease;
+            width: 16rem;
+            height: 16rem;
+            cursor: pointer;
+        }
+        #chartContainer.expanded {
+            width: 24rem;
+            height: 24rem;
+        }
+        .importance-high {
+            border: 2px solid orange;
+        }
+        .importance-urgent {
+            border: 2px solid red;
+        }
+        .importance-indicator {
+            margin-right: 4px;
+        }
+        .permanent-delete-btn {
+            display: none;
+        }
+        .note-item.long-press .permanent-delete-btn {
+            display: inline-block;
+        }
+        #generalNotesEditor {
+            min-height: 100px;
+            border: 1px solid #d1d5db;
+            padding: 8px;
+            border-radius: 4px;
+            outline: none;
+        }
+        #generalNotesEditor:focus {
+            ring: 2px;
+            ring-color: #3b82f6;
+        }
+        #generalNotesEditor a {
+            color: #3b82f6;
+            text-decoration: underline;
+        }
+        .note-delete-btn {
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">Notes Dashboard</h1>
+            <div class="flex space-x-4">
+                <button id="addBucketBtn" class="add-bucket-btn bg-blue-500 text-white hover:bg-blue-600">＋</button>
+                <button id="editModeBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Edit</button>
+            </div>
+        </div>
+        <div id="chartContainer" class="mx-auto mb-6">
+            <canvas id="bucketChart"></canvas>
+        </div>
+        <div id="bucketsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6"></div>
+        <div id="generalNotes" class="bg-white p-4 rounded shadow mb-6">
+            <h2 class="text-xl font-semibold mb-2">General Notes</h2>
+            <div class="flex space-x-2 mb-2">
+                <button id="boldBtn" class="bg-gray-200 px-2 py-1 rounded hover:bg-gray-300" title="Bold">B</button>
+                <button id="italicBtn" class="bg-gray-200 px-2 py-1 rounded hover:bg-gray-300" title="Italic">I</button>
+                <button id="underlineBtn" class="bg-gray-200 px-2 py-1 rounded hover:bg-gray-300" title="Underline">U</button>
+                <button id="bulletBtn" class="bg-gray-200 px-2 py-1 rounded hover:bg-gray-300" title="Bullet List">•</button>
+                <button id="linkBtn" class="bg-gray-200 px-2 py-1 rounded hover:bg-gray-300" title="Insert Link">🔗</button>
+            </div>
+            <div id="generalNotesEditor" contenteditable="true" class="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
+        </div>
+        <div id="completedBucket" class="bucket-card bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Completed</h2>
+            <ul id="completedNotes" class="space-y-2"></ul>
+        </div>
+
+        <script>
+            let editMode = false;
+            let buckets = JSON.parse(localStorage.getItem('buckets') || '[]');
+            // Ensure Completed bucket exists
+            if (!buckets.some(b => b.name.toLowerCase() === 'completed')) {
+                buckets.push({ name: 'Completed', notes: [] });
+                saveBuckets();
+            }
+
+            const bucketsContainer = document.getElementById('bucketsContainer');
+            const completedNotesContainer = document.getElementById('completedNotes');
+            const addBucketBtn = document.getElementById('addBucketBtn');
+            const editModeBtn = document.getElementById('editModeBtn');
+            const generalNotesEditor = document.getElementById('generalNotesEditor');
+            const boldBtn = document.getElementById('boldBtn');
+            const italicBtn = document.getElementById('italicBtn');
+            const underlineBtn = document.getElementById('underlineBtn');
+            const bulletBtn = document.getElementById('bulletBtn');
+            const linkBtn = document.getElementById('linkBtn');
+            let longPressTimer;
+
+            // Load saved general notes
+            generalNotesEditor.innerHTML = localStorage.getItem('generalNotes') || '';
+
+            function formatDate(date) {
+                return new Date(date).toLocaleString();
+            }
+
+            function saveBuckets() {
+                localStorage.setItem('buckets', JSON.stringify(buckets));
+                renderChart();
+            }
+
+            function saveGeneralNotes() {
+                localStorage.setItem('generalNotes', generalNotesEditor.innerHTML);
+            }
+
+            function toggleEditMode() {
+                editMode = !editMode;
+                document.body.classList.toggle('edit-mode', editMode);
+                editModeBtn.textContent = editMode ? 'Done' : 'Edit';
+                renderBuckets();
+            }
+
+            function addNewBucket() {
+                const bucketName = prompt('Enter bucket name:');
+                if (bucketName && bucketName.trim()) {
+                    buckets.splice(buckets.length - 1, 0, { name: bucketName.trim(), notes: [] }); // Insert before Completed
+                    saveBuckets();
+                    renderBuckets();
+                }
+            }
+
+            function handleDragStart(e) {
+                if (!editMode) return;
+                e.target.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', e.target.getAttribute('data-bucket-index'));
+            }
+
+            function handleDragOver(e) {
+                if (!editMode) return;
+                e.preventDefault();
+            }
+
+            function handleDrop(e) {
+                if (!editMode) return;
+                e.preventDefault();
+                const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                const targetIndex = parseInt(e.target.closest('.bucket-card').getAttribute('data-bucket-index'));
+                if (draggedIndex === targetIndex || isNaN(draggedIndex) || isNaN(targetIndex)) return;
+                const completedIndex = buckets.findIndex(b => b.name.toLowerCase() === 'completed');
+                if (targetIndex === completedIndex || draggedIndex === completedIndex) return; // Prevent moving Completed bucket
+                const [draggedBucket] = buckets.splice(draggedIndex, 1);
+                buckets.splice(targetIndex, 0, draggedBucket);
+                saveBuckets();
+                renderBuckets();
+            }
+
+            function handleDragEnd(e) {
+                e.target.classList.remove('dragging');
+            }
+
+            window.addNote = (input, bucketIndex) => {
+                if (editMode || isNaN(bucketIndex)) return;
+                const noteText = input.value.trim();
+                if (noteText) {
+                    const newNote = {
+                        text: noteText,
+                        added: new Date().toISOString(),
+                        importance: 'low',
+                        originalBucket: bucketIndex
+                    };
+                    buckets[bucketIndex].notes.push(newNote);
+                    saveBuckets();
+                    input.value = '';
+                    renderBuckets();
+                }
+            };
+
+            window.updateNote = (bucketIndex, noteIndex, newText) => {
+                if (editMode) return;
+                const trimmed = newText.trim();
+                if (trimmed) {
+                    buckets[bucketIndex].notes[noteIndex].text = trimmed;
+                    saveBuckets();
+                } else {
+                    window.deleteNote(bucketIndex, noteIndex);
+                }
+            };
+
+            window.changeImportance = (bucketIndex, noteIndex, value) => {
+                buckets[bucketIndex].notes[noteIndex].importance = value;
+                saveBuckets();
+                renderBuckets();
+            };
+
+            window.deleteNote = (bucketIndex, noteIndex) => {
+                if (editMode) return;
+                const completedBucketIndex = buckets.findIndex(b => b.name.toLowerCase() === 'completed');
+                const note = buckets[bucketIndex].notes.splice(noteIndex, 1)[0];
+                if (completedBucketIndex !== -1 && bucketIndex !== completedBucketIndex) {
+                    note.originalBucket = bucketIndex;
+                    buckets[completedBucketIndex].notes.push(note);
+                }
+                saveBuckets();
+                renderBuckets();
+            };
+
+            window.restoreNote = (noteIndex) => {
+                const completedBucketIndex = buckets.findIndex(b => b.name.toLowerCase() === 'completed');
+                if (completedBucketIndex === -1) return;
+                const note = buckets[completedBucketIndex].notes.splice(noteIndex, 1)[0];
+                if (note.originalBucket !== undefined && buckets[note.originalBucket]) {
+                    buckets[note.originalBucket].notes.push(note);
+                }
+                saveBuckets();
+                renderBuckets();
+            };
+
+            window.permanentDeleteNote = (noteIndex) => {
+                const completedBucketIndex = buckets.findIndex(b => b.name.toLowerCase() === 'completed');
+                if (completedBucketIndex === -1) return;
+                buckets[completedBucketIndex].notes.splice(noteIndex, 1);
+                saveBuckets();
+                renderBuckets();
+            };
+
+            window.deleteBucket = (index) => {
+                if (buckets[index].name.toLowerCase() === 'completed') return; // Prevent deleting Completed bucket
+                buckets.splice(index, 1);
+                saveBuckets();
+                renderBuckets();
+            };
+
+            function renderNote(note, bucketIndex, noteIndex, isCompleted = false) {
+                const importanceClass = note.importance ? `importance-${note.importance}` : '';
+                const importanceIndicator = {
+                    low: '🟢',
+                    medium: '🔵',
+                    high: '🟠',
+                    urgent: '🔴'
+                }[note.importance] || '';
+                return `
+                    <li class="note-item p-2 border-b ${importanceClass}" data-note-index="${noteIndex}">
+                        <div class="flex justify-between items-center">
+                            <span contenteditable="${!isCompleted}" onblur="updateNote(${bucketIndex}, ${noteIndex}, this.textContent)" class="flex-1">
+                                <span class="importance-indicator">${importanceIndicator}</span> ${note.text}
+                            </span>
+                            ${isCompleted ? 
+                                `
+                                <div class="flex space-x-2">
+                                    <button class="text-blue-500 hover:text-blue-700 text-lg font-bold" onclick="restoreNote(${noteIndex})">➖</button>
+                                    <button class="permanent-delete-btn text-red-500 hover:text-red-700 text-lg font-bold" onclick="permanentDeleteNote(${noteIndex})">🗑</button>
+                                </div>
+                                ` :
+                                `<button class="note-delete-btn text-red-500 hover:text-red-700 text-lg font-bold" onclick="deleteNote(${bucketIndex}, ${noteIndex})">✕</button>`
+                            }
+                        </div>
+                        <div class="flex justify-between items-center text-sm text-gray-500 mt-1">
+                            <span>Added: ${formatDate(note.added)}</span>
+                            <select onchange="changeImportance(${bucketIndex}, ${noteIndex}, this.value)" class="text-sm border rounded px-2 py-1" ${isCompleted ? 'disabled' : ''}>
+                                <option value="low" ${note.importance === 'low' ? 'selected' : ''}>Low 🟢</option>
+                                <option value="medium" ${note.importance === 'medium' ? 'selected' : ''}>Medium 🔵</option>
+                                <option value="high" ${note.importance === 'high' ? 'selected' : ''}>High 🟠</option>
+                                <option value="urgent" ${note.importance === 'urgent' ? 'selected' : ''}>Urgent 🔴</option>
+                            </select>
+                        </div>
+                    </li>
+                `;
+            }
+
+            function renderBuckets() {
+                bucketsContainer.innerHTML = '';
+                completedNotesContainer.innerHTML = '';
+                
+                buckets.forEach((bucket, bucketIndex) => {
+                    const notes = bucket.notes || [];
+                    if (bucket.name.toLowerCase() === 'completed') {
+                        completedNotesContainer.innerHTML = notes.map((note, noteIndex) => 
+                            renderNote(note, bucketIndex, noteIndex, true)
+                        ).join('');
+                        return;
+                    }
+                    const bucketDiv = document.createElement('div');
+                    bucketDiv.className = 'bucket-card bg-white p-6 rounded-lg shadow-md';
+                    bucketDiv.draggable = editMode;
+                    bucketDiv.setAttribute('data-bucket-index', bucketIndex);
+                    if (editMode) {
+                        bucketDiv.addEventListener('dragstart', handleDragStart);
+                        bucketDiv.addEventListener('dragover', handleDragOver);
+                        bucketDiv.addEventListener('drop', handleDrop);
+                        bucketDiv.addEventListener('dragend', handleDragEnd);
+                    }
+
+                    bucketDiv.innerHTML = `
+                        <div class="flex justify-between items-center mb-4 header-area">
+                            <h2 class="text-xl font-semibold text-gray-800">${bucket.name}</h2>
+                            <button class="delete-bucket-btn text-red-500 hover:text-red-700 text-lg font-bold" onclick="deleteBucket(${bucketIndex})">✕</button>
+                        </div>
+                        <div class="mb-4">
+                            <input type="text" placeholder="Add a note..." 
+                                   class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   onkeypress="if(event.key === 'Enter') addNote(this, ${bucketIndex})">
+                        </div>
+                        <ul class="space-y-2">
+                            ${notes.map((note, noteIndex) => renderNote(note, bucketIndex, noteIndex)).join('')}
+                        </ul>
+                    `;
+
+                    bucketsContainer.appendChild(bucketDiv);
+                });
+
+                // Add long-press event listeners for completed notes
+                const completedNotes = completedNotesContainer.querySelectorAll('.note-item');
+                completedNotes.forEach(note => {
+                    note.addEventListener('mousedown', (e) => {
+                        longPressTimer = setTimeout(() => {
+                            note.classList.add('long-press');
+                        }, 500); // 500ms for long press
+                    });
+                    note.addEventListener('mouseup', () => {
+                        clearTimeout(longPressTimer);
+                    });
+                });
+
+                // Add click event listener to remove long-press class when clicking elsewhere
+                document.addEventListener('click', (e) => {
+                    const noteItem = e.target.closest('.note-item');
+                    const isPermanentDeleteBtn = e.target.classList.contains('permanent-delete-btn');
+                    const isRestoreBtn = e.target.classList.contains('text-blue-500'); // Matches restore button
+                    if (!noteItem && !isPermanentDeleteBtn && !isRestoreBtn) {
+                        completedNotes.forEach(note => note.classList.remove('long-press'));
+                    }
+                });
+            }
+
+            function renderChart() {
+                const ctx = document.getElementById('bucketChart').getContext('2d');
+                const data = buckets
+                    .filter(b => b.name.toLowerCase() !== 'completed')
+                    .map(b => b.notes.length);
+                const labels = buckets
+                    .filter(b => b.name.toLowerCase() !== 'completed')
+                    .map(b => b.name);
+
+                if (window.myPieChart) {
+                    window.myPieChart.destroy();
+                }
+
+                window.myPieChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Notes Count',
+                            data: data,
+                            backgroundColor: [
+                                '#60a5fa', // Blue
+                                '#34d399', // Green
+                                '#fbbf24', // Yellow
+                                '#f87171', // Red
+                                '#a78bfa', // Purple
+                                '#f472b6', // Pink
+                                '#4ade80', // Light Green
+                                '#fb923c', // Orange
+                                '#38bdf8', // Sky Blue
+                                '#e879f9', // Magenta
+                                '#6ee7b7', // Mint
+                                '#facc15'  // Amber
+                            ],
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Text formatting for General Notes
+            boldBtn.addEventListener('click', () => {
+                document.execCommand('bold', false, null);
+                generalNotesEditor.focus();
+                saveGeneralNotes();
+            });
+
+            italicBtn.addEventListener('click', () => {
+                document.execCommand('italic', false, null);
+                generalNotesEditor.focus();
+                saveGeneralNotes();
+            });
+
+            underlineBtn.addEventListener('click', () => {
+                document.execCommand('underline', false, null);
+                generalNotesEditor.focus();
+                saveGeneralNotes();
+            });
+
+            bulletBtn.addEventListener('click', () => {
+                document.execCommand('insertUnorderedList', false, null);
+                generalNotesEditor.focus();
+                saveGeneralNotes();
+            });
+
+            linkBtn.addEventListener('click', () => {
+                const url = prompt('Enter the URL (e.g., https://example.com):');
+                if (url) {
+                    const text = prompt('Enter the display text for the link:') || url;
+                    const selection = window.getSelection();
+                    if (!selection.isCollapsed) {
+                        document.execCommand('createLink', false, url);
+                    } else {
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.textContent = text;
+                        generalNotesEditor.appendChild(link);
+                        generalNotesEditor.appendChild(document.createTextNode(' ')); // Add space after link
+                    }
+                    generalNotesEditor.focus();
+                    saveGeneralNotes();
+                }
+            });
+
+            generalNotesEditor.addEventListener('input', saveGeneralNotes);
+
+            addBucketBtn.addEventListener('click', addNewBucket);
+            editModeBtn.addEventListener('click', toggleEditMode);
+
+            renderBuckets();
+            renderChart();
+        </script>
+    </div>
+</body>
+</html>
