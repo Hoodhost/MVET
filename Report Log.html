@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/Hoodhost/MVET/refs/heads/main/MVET.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mill IT Report</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* Align header to the left */
+            margin-bottom: 50px; /* Adds space below the header */
+        }
+        .logo-header {
+            max-width: 180px;
+            height: auto;
+            transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth animation for both */
+            margin-right: 16px; /* Space between logo and buttons */
+        }
+        .logo-header:hover {
+            transform: translateY(-1px); /* Moves the image up slightly */
+            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2); /* Adds a shadow for a lifted effect */
+        }
+        /* General Styles */
+        body {
+            background-color: #F0F2F5;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #e05b03;
+            text-align: center;
+            font-size: 30px;
+            margin-bottom: 24px;
+        }
+        h2 {
+            color: #e05b03;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+        #reportFormContainer, #editFormContainer, #viewReportContainer {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 672px;
+            margin: 0 auto;
+        }
+        .mb-4 {
+            margin-bottom: 16px;
+        }
+        .block {
+            display: block;
+        }
+        .font-medium {
+            font-weight: 500;
+        }
+        input[type="text"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .space-y-3 > * {
+            margin-bottom: 12px;
+        }
+        .space-y-3 > *:last-child {
+            margin-bottom: 0;
+        }
+        .flex {
+            display: flex;
+        }
+        .items-center {
+            align-items: center;
+        }
+        .mr-2 {
+            margin-right: 8px;
+        }
+        .mt-4 {
+            margin-top: 16px;
+        }
+        .mt-8 {
+            margin-top: 32px;
+        }
+        .space-x-2 > * {
+            margin-right: 8px;
+        }
+        .space-x-2 > *:last-child {
+            margin-right: 0;
+        }
+        .justify-end {
+            justify-content: flex-end;
+        }
+        button {
+            background: linear-gradient(to right, #f26818, #e56216);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 32px;
+            cursor: pointer;
+            font-size: 18px;
+            min-width: 100px;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+        button:hover {
+            background: linear-gradient(to right, #e56216, #b86b13);
+            transform: scale(1.03);
+        }
+        .header-btn {
+            background: none;
+            color: #000; /* Black text */
+            padding: 12px;
+            border: none;
+            border-radius: 32px;
+            cursor: pointer;
+            font-size: 18px;
+            min-width: 100px;
+            transition: color 0.3s ease, transform 0.2s ease;
+        }
+        .header-btn:hover {
+            color: #e05b03; /* Matches hover color of other buttons */
+            background: none; /* No background on hover */
+            transform: scale(1.03);
+        }
+        .collapse-btn, #shareBtn {
+            background: none;
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+            border: none;
+            padding: 0;
+            min-width: 30px;
+            cursor: pointer;
+            display: none;
+            transition: color 0.3s ease;
+        }
+        #shareBtn {
+            display: inline-block;
+            font-size: 20px;
+        }
+        .collapse-btn:hover, #shareBtn:hover {
+            color: #e05b03;
+        }
+        #logContainer {
+            max-width: 672px;
+            margin: 0 auto;
+        }
+        #reportLog > div {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 16px;
+            cursor: pointer;
+        }
+        #reportLog h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e05b03;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        #errorMessage {
+            color: #b86b13;
+            text-align: center;
+            margin-top: 16px;
+        }
+        .hidden {
+            display: none;
+        }
+        .bg-gray-50 {
+            background-color: #f9fafb;
+        }
+        .filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .filter-container select {
+            flex: 1;
+            min-width: 120px;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        #shareMessage {
+            color: #e05b03;
+            text-align: center;
+            margin-top: 16px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="https://raw.githubusercontent.com/Hoodhost/QRGen/refs/heads/main/Hood%20horizontal%20Logo.png" alt="Logo" class="logo-header" onclick="refreshPage()">
+        <div class="space-x-2">
+            <button class="header-btn" onclick="window.location.href='index.html'">Home</button>
+            <button class="header-btn" onclick="window.location.href='Dashboard.html'">Dashboard</button>
+        </div>
+    </header>
+    <div class="container">
+        <h1>Mill IT Reports</h1>
+
+        <!-- Button to show form -->
+        <div class="button-container">
+            <button id="createReportBtn">New Report</button>
+        </div>
+
+        <!-- Form (hidden by default) -->
+        <div id="reportFormContainer" class="hidden">
+            <form id="reportForm">
+                <h2>IT Report Checklist</h2>
+                <div class="mb-4">
+                    <label for="creatorName" class="block font-medium">Creator Name:</label>
+                    <input type="text" id="creatorName" name="creatorName" required>
+                </div>
+                <div class="mb-4">
+                    <label for="visitDate" class="block font-medium">Visit Date:</label>
+                    <input type="date" id="visitDate" name="visitDate" required>
+                </div>
+                <div class="mb-4">
+                    <label for="millLocation" class="block font-medium">Mill Location:</label>
+                    <select id="millLocation" name="millLocation" required>
+                        <option value="" disabled selected>Select a location</option>
+                        <option value="Beaumont">Beaumont</option>
+                        <option value="Bogalusa">Bogalusa</option>
+                        <option value="Silver Creek">Silver Creek</option>
+                        <option value="Waynesboro">Waynesboro</option>
+                        <option value="Wiggins">Wiggins</option>
+                    </select>
+                </div>
+                <div class="space-y-3">
+                    <button type="button" id="selectAllBtn">Select All</button>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Review pending tickets in Freshservice" class="mr-2">
+                        Review pending tickets in Freshservice
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Ask IT personnel about specific requests in Mill IT Office" class="mr-2">
+                        Ask IT personnel about specific requests in Mill IT Office
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Report time of leaving/returning to Office IT Staff" class="mr-2">
+                        Report time of leaving/returning to Office IT Staff
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Report visit to Front Office at Mill" class="mr-2">
+                        Report visit to Front Office at Mill
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Report visit with Plant Manager if available" class="mr-2">
+                        Report visit with Plant Manager if available
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Check for tech issues in Human Resources" class="mr-2">
+                        Check for tech issues in Human Resources
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Check for tech issues in Safety Coordinator Office" class="mr-2">
+                        Check for tech issues in Safety Coordinator Office
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Check for tech issues in Shipping Department" class="mr-2">
+                        Check for tech issues in Shipping Department
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Check Tag Track Work Stations and Scanning Guns" class="mr-2">
+                        Check Tag Track Work Stations and Scanning Guns
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Check MSDS-Online Touch Screen Stations" class="mr-2">
+                        Check MSDS-Online Touch Screen Stations
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Check for tech issues in Purchasing Department" class="mr-2">
+                        Check for tech issues in Purchasing Department
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Check for tech issues in Maintenance Department" class="mr-2">
+                        Check for tech issues in Maintenance Department
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Check for tech issues in Scales House" class="mr-2">
+                        Check for tech issues in Scales House
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Check for tech issues in Supervisors General Office" class="mr-2">
+                        Check for tech issues in Supervisors General Office
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Report leaving the Mill Front Office" class="mr-2">
+                        Report leaving the Mill Front Office
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Create/Update Tech Support tickets in Freshservice" class="mr-2">
+                        Create/Update Tech Support tickets in Freshservice
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Send communications for follow-up issues" class="mr-2">
+                        Send communications for follow-up issues
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Refilled Gas if the IT Vehicle was below half full" class="mr-2">
+                        Refilled Gas if the IT Vehicle was below half full
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Performed upkeep for general cleanliness in the vehicle such as removing trash or food debris" class="mr-2">
+                        Performed upkeep for general cleanliness in the vehicle such as removing trash or food debris
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Removed all equipment from the vehicle upon returning to the office" class="mr-2">
+                        Removed all equipment from the vehicle upon returning to the office
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="tasks" value="Took the vehicle to the carwash to remove mud or other buildup from the vehicle" class="mr-2">
+                        Took the vehicle to the carwash to remove mud or other buildup from the vehicle
+                    </label>
+                </div>
+                <div class="mt-4">
+                    <label for="comments" class="block font-medium">Comments:</label>
+                    <textarea id="comments" name="comments" class="w-full p-2 border rounded" rows="4"></textarea>
+                </div>
+                <div class="mt-4">
+                    <label for="notes" class="block font-medium">Notes:</label>
+                    <textarea id="notes" name="notes" class="w-full p-2 border rounded" rows="4"></textarea>
+                </div>
+                <div class="mt-4">
+                    <label for="needsFollowUp" class="block font-medium">Needs Follow Up:</label>
+                    <textarea id="needsFollowUp" name="needsFollowUp" class="w-full p-2 border rounded" rows="4"></textarea>
+                </div>
+                <div class="mt-4 flex justify-end space-x-2">
+                    <button type="button" id="cancelBtn">Cancel</button>
+                    <button type="submit" id="submitBtn">Submit</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Log Section -->
+        <div id="logContainer" class="mt-8">
+            <h2>Report Log</h2>
+            <div class="filter-container">
+                <select id="sortOrder" onchange="renderLog()">
+                    <option value="newest">Sort: Newest to Oldest</option>
+                    <option value="oldest">Sort: Oldest to Newest</option>
+                </select>
+                <select id="filterLocation" onchange="renderLog()">
+                    <option value="">All Locations</option>
+                    <option value="Beaumont">Beaumont</option>
+                    <option value="Bogalusa">Bogalusa</option>
+                    <option value="Silver Creek">Silver Creek</option>
+                    <option value="Waynesboro">Waynesboro</option>
+                    <option value="Wiggins">Wiggins</option>
+                </select>
+                <select id="filterMonth" onchange="renderLog()">
+                    <option value="">All Months</option>
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+                <select id="filterYear" onchange="renderLog()">
+                    <option value="">All Years</option>
+                    <option value="2023">2023</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                </select>
+            </div>
+            <div id="reportLog" class="space-y-4"></div>
+        </div>
+
+        <!-- Edit Form (hidden by default) -->
+        <div id="editFormContainer" class="hidden">
+            <form id="editForm">
+                <h2>Edit Report</h2>
+                <input type="hidden" id="editReportId">
+                <div class="mb-4">
+                    <label for="editCreatorName" class="block font-medium">Creator Name:</label>
+                    <input type="text" id="editCreatorName" name="editCreatorName" required>
+                </div>
+                <div class="mb-4">
+                    <label for="editVisitDate" class="block font-medium">Visit Date:</label>
+                    <input type="date" id="editVisitDate" name="editVisitDate" required>
+                </div>
+                <div class="mb-4">
+                    <label for="editMillLocation" class="block font-medium">Mill Location:</label>
+                    <select id="editMillLocation" name="editMillLocation" required>
+                        <option value="" disabled>Select a location</option>
+                        <option value="Beaumont">Beaumont</option>
+                        <option value="Bogalusa">Bogalusa</option>
+                        <option value="Silver Creek">Silver Creek</option>
+                        <option value="Waynesboro">Waynesboro</option>
+                        <option value="Wiggins">Wiggins</option>
+                    </select>
+                </div>
+                <div class="space-y-3">
+                    <button type="button" id="editSelectAllBtn">Select All</button>
+                    <div id="editFormTasks" class="space-y-3"></div>
+                </div>
+                <div class="mt-4">
+                    <label for="editComments" class="block font-medium">Comments:</label>
+                    <textarea id="editComments" name="editComments" class="w-full p-2 border rounded" rows="4"></textarea>
+                </div>
+                <div class="mt-4">
+                    <label for="editNotes" class="block font-medium">Notes:</label>
+                    <textarea id="editNotes" name="editNotes" class="w-full p-2 border rounded" rows="4"></textarea>
+                </div>
+                <div class="mt-4">
+                    <label for="editNeedsFollowUp" class="block font-medium">Needs Follow Up:</label>
+                    <textarea id="editNeedsFollowUp" name="editNeedsFollowUp" class="w-full p-2 border rounded" rows="4"></textarea>
+                </div>
+                <div class="mt-4 flex justify-end space-x-2">
+                    <button type="button" id="editCancelBtn">Cancel</button>
+                    <button type="button" id="editDeleteBtn">Delete</button>
+                    <button type="submit">Save Changes</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Read-Only View (hidden by default) -->
+        <div id="viewReportContainer" class="hidden">
+            <h2>View Report</h2>
+            <div id="viewReportContent" class="space-y-3"></div>
+            <div class="mt-4 flex justify-end space-x-2">
+                <button id="shareBtn">📤</button>
+                <button id="exportBtn">Export as PDF</button>
+                <button id="closeViewBtn">Close</button>
+            </div>
+            <div id="shareMessage"></div>
+        </div>
+
+        <!-- Error Message Container -->
+        <div id="errorMessage" class="hidden"></div>
+    </div>
+
+    <script>
+        const { jsPDF } = window.jspdf;
+        const tasks = [
+            "Review pending tickets in Freshservice",
+            "Ask IT personnel about specific requests in Mill IT Office",
+            "Report time of leaving/returning to Office IT Staff",
+            "Report visit to Front Office at Mill",
+            "Report visit with Plant Manager if available",
+            "Check for tech issues in Human Resources",
+            "Check for tech issues in Safety Coordinator Office",
+            "Check for tech issues in Shipping Department",
+            "Check Tag Track Work Stations and Scanning Guns",
+            "Check MSDS-Online Touch Screen Stations",
+            "Check for tech issues in Purchasing Department",
+            "Check for tech issues in Maintenance Department",
+            "Check for tech issues in Scales House",
+            "Check for tech issues in Supervisors General Office",
+            "Report leaving the Mill Front Office",
+            "Create/Update Tech Support tickets in Freshservice",
+            "Send communications for follow-up issues",
+            "Refilled Gas if the IT Vehicle was below half full",
+            "Performed upkeep for general cleanliness in the vehicle such as removing trash or food debris",
+            "Removed all equipment from the vehicle upon returning to the office",
+            "Took the vehicle to the carwash to remove mud or other buildup from the vehicle"
+        ];
+
+        // Show/hide form
+        document.getElementById('createReportBtn').addEventListener('click', () => {
+            document.getElementById('reportFormContainer').classList.remove('hidden');
+            document.getElementById('createReportBtn').classList.add('hidden');
+            document.getElementById('logContainer').classList.remove('hidden');
+            hideView();
+            hideError();
+            hideShareMessage();
+        });
+
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            document.getElementById('reportFormContainer').classList.add('hidden');
+            document.getElementById('createReportBtn').classList.remove('hidden');
+            document.getElementById('logContainer').classList.remove('hidden');
+            document.getElementById('reportForm').reset();
+            hideError();
+            hideShareMessage();
+        });
+
+        // Select all checkboxes
+        document.getElementById('selectAllBtn').addEventListener('click', () => {
+            const checkboxes = document.querySelectorAll('input[name="tasks"]');
+            checkboxes.forEach(checkbox => checkbox.checked = true);
+        });
+
+        // Handle form submission
+        document.getElementById('reportForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            try {
+                const creatorName = document.getElementById('creatorName').value.trim();
+                const visitDate = document.getElementById('visitDate').value;
+                const millLocation = document.getElementById('millLocation').value;
+                const checkboxes = document.querySelectorAll('input[name="tasks"]:checked');
+                const selectedTasks = Array.from(checkboxes).map(cb => cb.value);
+                const comments = document.getElementById('comments').value.trim();
+                const notes = document.getElementById('notes').value.trim();
+                const needsFollowUp = document.getElementById('needsFollowUp').value.trim();
+
+                if (!creatorName || !visitDate || !millLocation) {
+                    showError('Please fill in all required fields.');
+                    return;
+                }
+
+                const report = {
+                    id: Date.now().toString(),
+                    creatorName,
+                    visitDate,
+                    millLocation,
+                    tasks: selectedTasks,
+                    comments,
+                    notes,
+                    needsFollowUp,
+                    submissionDate: new Date().toLocaleString()
+                };
+
+                // Save to localStorage
+                const reports = JSON.parse(localStorage.getItem('reports') || '[]');
+                reports.push(report);
+                localStorage.setItem('reports', JSON.stringify(reports));
+
+                // Reset form and hide
+                document.getElementById('reportForm').reset();
+                document.getElementById('reportFormContainer').classList.add('hidden');
+                document.getElementById('createReportBtn').classList.remove('hidden');
+                document.getElementById('logContainer').classList.remove('hidden');
+
+                // Update log and show read-only view
+                renderLog();
+                viewReport(report.id);
+            } catch (error) {
+                console.error('Error saving report:', error);
+                showError('An error occurred while saving the report. Please try again.');
+            }
+        });
+
+        // Render log with sorting and filtering
+        function renderLog() {
+            try {
+                const reportLog = document.getElementById('reportLog');
+                const sortOrder = document.getElementById('sortOrder').value;
+                const filterLocation = document.getElementById('filterLocation').value;
+                const filterMonth = document.getElementById('filterMonth').value;
+                const filterYear = document.getElementById('filterYear').value;
+                let reports = JSON.parse(localStorage.getItem('reports') || '[]');
+
+                // Apply filters
+                if (filterLocation) {
+                    reports = reports.filter(report => report.millLocation === filterLocation);
+                }
+                if (filterMonth || filterYear) {
+                    reports = reports.filter(report => {
+                        const date = new Date(report.visitDate);
+                        const monthMatch = filterMonth ? date.getMonth() + 1 === parseInt(filterMonth) : true;
+                        const yearMatch = filterYear ? date.getFullYear() === parseInt(filterYear) : true;
+                        return monthMatch && yearMatch;
+                    });
+                }
+
+                // Sort reports
+                reports.sort((a, b) => {
+                    const dateA = new Date(a.submissionDate);
+                    const dateB = new Date(b.submissionDate);
+                    return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+                });
+
+                reportLog.innerHTML = '';
+                reports.forEach(report => {
+                    const reportDiv = document.createElement('div');
+                    reportDiv.innerHTML = `
+                        <h3 class="text-lg font-semibold">
+                            <span onclick="toggleDetails(this)">${report.millLocation} - ${report.visitDate} - ${report.creatorName}</span>
+                            <button class="collapse-btn" onclick="toggleDetails(this)">-</button>
+                        </h3>
+                        <div class="hidden details">
+                            <p><strong>Creator:</strong> ${report.creatorName || 'Unknown'}</p>
+                            <p><strong>Visit Date:</strong> ${report.visitDate || 'N/A'}</p>
+                            <p><strong>Location:</strong> ${report.millLocation || 'N/A'}</p>
+                            <p><strong>Submission Date:</strong> ${report.submissionDate}</p>
+                            <p><strong>Needs Follow Up:</strong> ${report.needsFollowUp || 'None'}</p>
+                            <div class="mt-2 space-x-2">
+                                <button class="viewBtn" data-id="${report.id}">View</button>
+                                <button class="editBtn" data-id="${report.id}">Edit</button>
+                            </div>
+                        </div>
+                    `;
+                    reportLog.appendChild(reportDiv);
+                });
+
+                // Add view and edit button listeners
+                document.querySelectorAll('.viewBtn').forEach(btn => {
+                    btn.addEventListener('click', () => viewReport(btn.dataset.id));
+                });
+                document.querySelectorAll('.editBtn').forEach(btn => {
+                    btn.addEventListener('click', () => editReport(btn.dataset.id));
+                });
+            } catch (error) {
+                console.error('Error rendering log:', error);
+                showError('An error occurred while rendering the report log.');
+            }
+        }
+
+        // Toggle details visibility
+        function toggleDetails(element) {
+            const details = element.parentElement.nextElementSibling;
+            const collapseBtn = element.parentElement.querySelector('.collapse-btn');
+            if (details.classList.contains('hidden')) {
+                details.classList.remove('hidden');
+                collapseBtn.style.display = 'inline-block';
+            } else {
+                details.classList.add('hidden');
+                collapseBtn.style.display = 'none';
+            }
+        }
+
+        // Generate PDF content (reused for export and share)
+        function generatePDF(report) {
+            const doc = new jsPDF();
+            let y = 20;
+
+            // Add title
+            doc.setFontSize(16);
+            doc.text("WIGGINS", 105, y, { align: "center" });
+            y += 10;
+            doc.setFontSize(12);
+            doc.text(`${report.millLocation} - ${report.visitDate} - ${report.creatorName}`, 105, y, { align: "center" });
+            y += 10;
+
+            // Add report details
+            doc.setFontSize(10);
+            doc.text(`Creator: ${report.creatorName || 'Unknown'}`, 20, y);
+            y += 7;
+            doc.text(`Visit Date: ${report.visitDate || 'N/A'}`, 20, y);
+            y += 7;
+            doc.text(`Location: ${report.millLocation || 'N/A'}`, 20, y);
+            y += 7;
+            doc.text(`Submission Date: ${report.submissionDate}`, 20, y);
+            y += 10;
+
+            // Add tasks
+            doc.text("Tasks:", 20, y);
+            y += 7;
+            report.tasks.forEach(task => {
+                if (y > 270) {
+                    doc.addPage();
+                    y = 20;
+                }
+                doc.text(`- ${task}`, 25, y);
+                y += 7;
+            });
+            y += 10;
+
+            // Add comments
+            doc.text("Comments:", 20, y);
+            y += 7;
+            const commentsLines = doc.splitTextToSize(report.comments || 'None', 170);
+            commentsLines.forEach(line => {
+                if (y > 270) {
+                    doc.addPage();
+                    y = 20;
+                }
+                doc.text(line, 25, y);
+                y += 7;
+            });
+            y += 10;
+
+            // Add notes
+            doc.text("Notes:", 20, y);
+            y += 7;
+            const notesLines = doc.splitTextToSize(report.notes || 'None', 170);
+            notesLines.forEach(line => {
+                if (y > 270) {
+                    doc.addPage();
+                    y = 20;
+                }
+                doc.text(line, 25, y);
+                y += 7;
+            });
+            y += 10;
+
+            // Add needs follow-up
+            doc.text("Needs Follow Up:", 20, y);
+            y += 7;
+            const followUpLines = doc.splitTextToSize(report.needsFollowUp || 'None', 170);
+            followUpLines.forEach(line => {
+                if (y > 270) {
+                    doc.addPage();
+                    y = 20;
+                }
+                doc.text(line, 25, y);
+                y += 7;
+            });
+
+            return doc;
+        }
+
+        // View report (read-only)
+        function viewReport(id) {
+            try {
+                const reports = JSON.parse(localStorage.getItem('reports') || '[]');
+                const report = reports.find(r => r.id === id);
+                if (!report) {
+                    showError('Report not found.');
+                    return;
+                }
+
+                // Populate read-only view
+                const viewContent = document.getElementById('viewReportContent');
+                viewContent.innerHTML = `
+                    <h3 class="text-lg font-semibold">${report.millLocation} - ${report.visitDate} - ${report.creatorName}</h3>
+                    <p><strong>Creator:</strong> ${report.creatorName || 'Unknown'}</p>
+                    <p><strong>Visit Date:</strong> ${report.visitDate || 'N/A'}</p>
+                    <p><strong>Location:</strong> ${report.millLocation || 'N/A'}</p>
+                    <p><strong>Submission Date:</strong> ${report.submissionDate}</p>
+                    <div class="space-y-3">
+                        ${tasks.map(task => `
+                            <label class="flex items-center">
+                                <input type="checkbox" ${report.tasks.includes(task) ? 'checked' : ''} disabled class="mr-2">
+                                ${task}
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div class="mt-4">
+                        <p><strong>Comments:</strong></p>
+                        <p class="p-2 border rounded bg-gray-50">${report.comments || 'None'}</p>
+                    </div>
+                    <div class="mt-4">
+                        <p><strong>Notes:</strong></p>
+                        <p class="p-2 border rounded bg-gray-50">${report.notes || 'None'}</p>
+                    </div>
+                    <div class="mt-4">
+                        <p><strong>Needs Follow Up:</strong></p>
+                        <p class="p-2 border rounded bg-gray-50">${report.needsFollowUp || 'None'}</p>
+                    </div>
+                `;
+
+                // Show read-only view and hide log
+                document.getElementById('viewReportContainer').classList.remove('hidden');
+                document.getElementById('reportFormContainer').classList.add('hidden');
+                document.getElementById('editFormContainer').classList.add('hidden');
+                document.getElementById('createReportBtn').classList.add('hidden');
+                document.getElementById('logContainer').classList.add('hidden');
+                hideError();
+                hideShareMessage();
+
+                // Add button listeners
+                document.getElementById('exportBtn').onclick = () => exportToPDF(report);
+                document.getElementById('shareBtn').onclick = () => shareReport(report);
+            } catch (error) {
+                console.error('Error viewing report:', error);
+                showError('An error occurred while viewing the report.');
+            }
+        }
+
+        // Export to PDF
+        function exportToPDF(report) {
+            try {
+                const doc = generatePDF(report);
+                doc.save(`Wiggins_Report_${report.millLocation}_${report.visitDate}.pdf`);
+            } catch (error) {
+                console.error('Error exporting to PDF:', error);
+                showError('An error occurred while exporting the report to PDF.');
+            }
+        }
+
+        // Share report via email
+        function shareReport(report) {
+            try {
+                // Generate and download the PDF
+                const doc = generatePDF(report);
+                doc.save(`Wiggins_Report_${report.millLocation}_${report.visitDate}.pdf`);
+
+                // Create mailto link
+                const subject = encodeURIComponent(`${report.millLocation} - ${report.visitDate} - ${report.creatorName}`);
+                const body = encodeURIComponent(`Here is the report for visit to ${report.millLocation} on ${report.visitDate}.`);
+                const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
+
+                // Show instructional message
+                const shareMessage = document.getElementById('shareMessage');
+                shareMessage.textContent = `The PDF has been downloaded. Please attach "Wiggins_Report_${report.millLocation}_${report.visitDate}.pdf" to the email in your email client.`;
+                shareMessage.style.display = 'block';
+
+                // Open email client
+                window.open(mailtoLink, '_blank');
+            } catch (error) {
+                console.error('Error sharing report:', error);
+                showError('An error occurred while preparing the report for sharing. The PDF has been downloaded, but the email could not be opened.');
+                hideShareMessage();
+            }
+        }
+
+        // Close read-only view
+        document.getElementById('closeViewBtn').addEventListener('click', () => {
+            document.getElementById('viewReportContainer').classList.add('hidden');
+            document.getElementById('createReportBtn').classList.remove('hidden');
+            document.getElementById('logContainer').classList.remove('hidden');
+            hideError();
+            hideShareMessage();
+        });
+
+        // Hide view function
+        function hideView() {
+            document.getElementById('viewReportContainer').classList.add('hidden');
+            document.getElementById('logContainer').classList.remove('hidden');
+            hideShareMessage();
+        }
+
+        // Edit report
+        function editReport(id) {
+            try {
+                const reports = JSON.parse(localStorage.getItem('reports') || '[]');
+                const report = reports.find(r => r.id === id);
+                if (!report) {
+                    showError('Report not found.');
+                    return;
+                }
+
+                // Populate edit form
+                document.getElementById('editReportId').value = id;
+                document.getElementById('editCreatorName').value = report.creatorName || '';
+                document.getElementById('editVisitDate').value = report.visitDate || '';
+                document.getElementById('editMillLocation').value = report.millLocation || '';
+                document.getElementById('editComments').value = report.comments || '';
+                document.getElementById('editNotes').value = report.notes || '';
+                document.getElementById('editNeedsFollowUp').value = report.needsFollowUp || '';
+                const editFormTasks = document.getElementById('editFormTasks');
+                editFormTasks.innerHTML = tasks.map(task => `
+                    <label class="flex items-center">
+                        <input type="checkbox" name="editTasks" value="${task}" ${report.tasks.includes(task) ? 'checked' : ''} class="mr-2">
+                        ${task}
+                    </label>
+                `).join('');
+
+                // Show edit form and hide log
+                document.getElementById('editFormContainer').classList.remove('hidden');
+                document.getElementById('reportFormContainer').classList.add('hidden');
+                document.getElementById('viewReportContainer').classList.add('hidden');
+                document.getElementById('createReportBtn').classList.add('hidden');
+                document.getElementById('logContainer').classList.add('hidden');
+                hideError();
+                hideShareMessage();
+            } catch (error) {
+                console.error('Error editing report:', error);
+                showError('An error occurred while opening the edit form.');
+            }
+        }
+
+        // Handle edit form submission
+        document.getElementById('editForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            try {
+                const id = document.getElementById('editReportId').value;
+                const creatorName = document.getElementById('editCreatorName').value.trim();
+                const visitDate = document.getElementById('editVisitDate').value;
+                const millLocation = document.getElementById('editMillLocation').value;
+                const checkboxes = document.querySelectorAll('input[name="editTasks"]:checked');
+                const selectedTasks = Array.from(checkboxes).map(cb => cb.value);
+                const comments = document.getElementById('editComments').value.trim();
+                const notes = document.getElementById('editNotes').value.trim();
+                const needsFollowUp = document.getElementById('editNeedsFollowUp').value.trim();
+
+                if (!creatorName || !visitDate || !millLocation) {
+                    showError('Please fill in all required fields.');
+                    return;
+                }
+
+                // Update report
+                const reports = JSON.parse(localStorage.getItem('reports') || '[]');
+                const updatedReports = reports.map(report => {
+                    if (report.id === id) {
+                        return { ...report, creatorName, visitDate, millLocation, tasks: selectedTasks, comments, notes, needsFollowUp, submissionDate: new Date().toLocaleString() };
+                    }
+                    return report;
+                });
+                localStorage.setItem('reports', JSON.stringify(updatedReports));
+
+                // Reset and hide edit form
+                document.getElementById('editForm').reset();
+                document.getElementById('editFormContainer').classList.add('hidden');
+                document.getElementById('createReportBtn').classList.remove('hidden');
+                document.getElementById('logContainer').classList.remove('hidden');
+
+                // Update log and show read-only view
+                renderLog();
+                viewReport(id);
+            } catch (error) {
+                console.error('Error saving edited report:', error);
+                showError('An error occurred while saving the edited report. Please try again.');
+            }
+        });
+
+        // Cancel edit
+        document.getElementById('editCancelBtn').addEventListener('click', () => {
+            document.getElementById('editFormContainer').classList.add('hidden');
+            document.getElementById('createReportBtn').classList.remove('hidden');
+            document.getElementById('logContainer').classList.remove('hidden');
+            document.getElementById('editForm').reset();
+            hideError();
+            hideShareMessage();
+        });
+
+        // Delete report
+        document.getElementById('editDeleteBtn').addEventListener('click', () => {
+            try {
+                const id = document.getElementById('editReportId').value;
+                if (confirm('Are you sure you want to delete this report?')) {
+                    let reports = JSON.parse(localStorage.getItem('reports') || '[]');
+                    reports = reports.filter(report => report.id !== id);
+                    localStorage.setItem('reports', JSON.stringify(reports));
+                    document.getElementById('editFormContainer').classList.add('hidden');
+                    document.getElementById('createReportBtn').classList.remove('hidden');
+                    document.getElementById('logContainer').classList.remove('hidden');
+                    renderLog();
+                    hideError();
+                    hideShareMessage();
+                }
+            } catch (error) {
+                console.error('Error deleting report:', error);
+                showError('An error occurred while deleting the report.');
+            }
+        });
+
+        // Select all checkboxes in edit form
+        document.getElementById('editSelectAllBtn').addEventListener('click', () => {
+            const checkboxes = document.querySelectorAll('input[name="editTasks"]');
+            checkboxes.forEach(checkbox => checkbox.checked = true);
+        });
+
+        // Error handling functions
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+            hideShareMessage();
+        }
+
+        function hideError() {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = '';
+            errorMessage.classList.add('hidden');
+        }
+
+        // Share message handling
+        function hideShareMessage() {
+            const shareMessage = document.getElementById('shareMessage');
+            shareMessage.textContent = '';
+            shareMessage.style.display = 'none';
+        }
+
+        // Initial log render
+        renderLog();
+    </script>
+</body>
+</html>
