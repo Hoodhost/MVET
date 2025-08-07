@@ -592,8 +592,8 @@
                 reportLog.innerHTML = '';
                 reports.forEach(report => {
                     const reportDiv = document.createElement('div');
-                    reportDiv.innerHTML = `
-                        <h3 class="text-lg font-semibold">
+                    reportDiv.innerHTML = 
+                        `<h3 class="text-lg font-semibold">
                             <span onclick="toggleDetails(this)">${report.millLocation} - ${report.visitDate} - ${report.creatorName}</span>
                             <button class="collapse-btn" onclick="toggleDetails(this)">-</button>
                         </h3>
@@ -607,8 +607,7 @@
                                 <button class="viewBtn" data-id="${report.id}">View</button>
                                 <button class="editBtn" data-id="${report.id}">Edit</button>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                     reportLog.appendChild(reportDiv);
                 });
 
@@ -645,10 +644,7 @@
 
             // Add title
             doc.setFontSize(16);
-            doc.text("WIGGINS", 105, y, { align: "center" });
-            y += 10;
-            doc.setFontSize(12);
-            doc.text(`${report.millLocation} - ${report.visitDate} - ${report.creatorName}`, 105, y, { align: "center" });
+            doc.text(`${report.millLocation} ${report.visitDate} Report`, 105, y, { align: "center" });
             y += 10;
 
             // Add report details
@@ -731,19 +727,19 @@
 
                 // Populate read-only view
                 const viewContent = document.getElementById('viewReportContent');
-                viewContent.innerHTML = `
-                    <h3 class="text-lg font-semibold">${report.millLocation} - ${report.visitDate} - ${report.creatorName}</h3>
+                viewContent.innerHTML = 
+                    `<h3 class="text-lg font-semibold">${report.millLocation} - ${report.visitDate} - ${report.creatorName}</h3>
                     <p><strong>Creator:</strong> ${report.creatorName || 'Unknown'}</p>
                     <p><strong>Visit Date:</strong> ${report.visitDate || 'N/A'}</p>
                     <p><strong>Location:</strong> ${report.millLocation || 'N/A'}</p>
                     <p><strong>Submission Date:</strong> ${report.submissionDate}</p>
                     <div class="space-y-3">
-                        ${tasks.map(task => `
-                            <label class="flex items-center">
+                        ${tasks.map(task => 
+                            `<label class="flex items-center">
                                 <input type="checkbox" ${report.tasks.includes(task) ? 'checked' : ''} disabled class="mr-2">
                                 ${task}
-                            </label>
-                        `).join('')}
+                            </label>`
+                        ).join('')}
                     </div>
                     <div class="mt-4">
                         <p><strong>Comments:</strong></p>
@@ -756,8 +752,7 @@
                     <div class="mt-4">
                         <p><strong>Needs Follow Up:</strong></p>
                         <p class="p-2 border rounded bg-gray-50">${report.needsFollowUp || 'None'}</p>
-                    </div>
-                `;
+                    </div>`;
 
                 // Show read-only view and hide log
                 document.getElementById('viewReportContainer').classList.remove('hidden');
@@ -781,7 +776,7 @@
         function exportToPDF(report) {
             try {
                 const doc = generatePDF(report);
-                doc.save(`Wiggins_Report_${report.millLocation}_${report.visitDate}.pdf`);
+                doc.save(`${report.millLocation}_${report.visitDate}_Report.pdf`);
             } catch (error) {
                 console.error('Error exporting to PDF:', error);
                 showError('An error occurred while exporting the report to PDF.');
@@ -793,16 +788,16 @@
             try {
                 // Generate and download the PDF
                 const doc = generatePDF(report);
-                doc.save(`Wiggins_Report_${report.millLocation}_${report.visitDate}.pdf`);
+                doc.save(`${report.millLocation}_${report.visitDate}_Report.pdf`);
 
                 // Create mailto link
-                const subject = encodeURIComponent(`${report.millLocation} - ${report.visitDate} - ${report.creatorName}`);
+                const subject = encodeURIComponent(`${report.millLocation} ${report.visitDate} Report`);
                 const body = encodeURIComponent(`Here is the report for visit to ${report.millLocation} on ${report.visitDate}.`);
                 const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
 
                 // Show instructional message
                 const shareMessage = document.getElementById('shareMessage');
-                shareMessage.textContent = `The PDF has been downloaded. Please attach "Wiggins_Report_${report.millLocation}_${report.visitDate}.pdf" to the email in your email client.`;
+                shareMessage.textContent = `The PDF has been downloaded. Please attach "${report.millLocation}_${report.visitDate}_Report.pdf" to the email in your email client.`;
                 shareMessage.style.display = 'block';
 
                 // Open email client
@@ -849,12 +844,12 @@
                 document.getElementById('editNotes').value = report.notes || '';
                 document.getElementById('editNeedsFollowUp').value = report.needsFollowUp || '';
                 const editFormTasks = document.getElementById('editFormTasks');
-                editFormTasks.innerHTML = tasks.map(task => `
-                    <label class="flex items-center">
+                editFormTasks.innerHTML = tasks.map(task => 
+                    `<label class="flex items-center">
                         <input type="checkbox" name="editTasks" value="${task}" ${report.tasks.includes(task) ? 'checked' : ''} class="mr-2">
                         ${task}
-                    </label>
-                `).join('');
+                    </label>`
+                ).join('');
 
                 // Show edit form and hide log
                 document.getElementById('editFormContainer').classList.remove('hidden');
