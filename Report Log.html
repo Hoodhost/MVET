@@ -583,6 +583,9 @@
             "Took the vehicle to the carwash to remove mud or other buildup from the vehicle"
         ];
 
+        // Load Inter font (base64 encoded TTF)
+        const interFontBase64 = `data:font/truetype;base64,<base64-encoded-Inter-Regular.ttf>`; // Replace with actual base64-encoded Inter font TTF
+
         // Text formatting function
         function formatText(command, elementId) {
             const element = document.getElementById(elementId);
@@ -750,7 +753,12 @@
             const doc = new jsPDF();
             let y = 20;
 
+            // Add Inter font
+            doc.addFileToVFS('Inter-Regular.ttf', interFontBase64);
+            doc.addFont('Inter-Regular.ttf', 'Inter', 'normal');
+
             // Add title
+            doc.setFont('Inter', 'normal');
             doc.setFontSize(16);
             doc.text(`${report.millLocation} ${report.visitDate} Report`, 105, y, { align: "center" });
             y += 10;
