@@ -529,17 +529,17 @@
                         <button type="button" onclick="formatText('bold', 'editNotes')"><b>B</b></button>
                         <button type="button" onclick="formatText('italic', 'editNotes')"><i>I</i></button>
                         <button type="button" onclick="formatText('underline', 'editNotes')"><u>U</u></button>
-                        <button type="button" onclick="formatText('insertUnorderedList', 'editNotes')">• List</button>
+                        <button type="button" onclick="formatText('insertUnorderedList', 'notes')">• List</button>
                     </div>
                     <div id="editNotes" class="editable" contenteditable="true"></div>
                 </div>
                 <div class="mt-4">
                     <label for="editNeedsFollowUp" class="block font-medium">Needs Follow Up:</label>
                     <div class="toolbar">
-                        <button type="button" onclick="formatText('bold', 'editNeedsFollowUp')"><b>B</b></button>
-                        <button type="button" onclick="formatText('italic', 'editNeedsFollowUp')"><i>I</i></button>
-                        <button type="button" onclick="formatText('underline', 'editNeedsFollowUp')"><u>U</u></button>
-                        <button type="button" onclick="formatText('insertUnorderedList', 'editNeedsFollowUp')">• List</button>
+                        <button type="button" onclick="formatText('bold', 'needsFollowUp')"><b>B</b></button>
+                        <button type="button" onclick="formatText('italic', 'needsFollowUp')"><i>I</i></button>
+                        <button type="button" onclick="formatText('underline', 'needsFollowUp')"><u>U</u></button>
+                        <button type="button" onclick="formatText('insertUnorderedList', 'needsFollowUp')">• List</button>
                     </div>
                     <div id="editNeedsFollowUp" class="editable" contenteditable="true"></div>
                 </div>
@@ -808,16 +808,41 @@
             doc.text(`Submission Date: ${report.submissionDate}`, 20, y);
             y += 10;
 
-            // Add tasks with dash symbol for completed tasks
+            // Add tasks with section headers
             doc.text("Tasks:", 20, y);
-            y += 7;
+            y += 10;
             report.tasks.forEach(task => {
+                // Check for page break before adding section header
                 if (y > 270) {
                     doc.addPage();
                     y = 20;
                 }
-                doc.text(`- ${task}`, 25, y);
-                y += 7;
+                // Add section headers before the first task of each section
+                if (task === preVisitPrepTasks[0]) {
+                    doc.setFont('helvetica', 'bold');
+                    doc.text("Pre-Visit Prep:", 20, y);
+                    doc.setFont('helvetica', 'normal');
+                    y += 10;
+                } else if (task === onSiteTasks[0]) {
+                    doc.setFont('helvetica', 'bold');
+                    doc.text("On-Site Tasks:", 20, y);
+                    doc.setFont('helvetica', 'normal');
+                    y += 10;
+                } else if (task === postVisitUpkeepTasks[0]) {
+                    doc.setFont('helvetica', 'bold');
+                    doc.text("Post-Visit Upkeep:", 20, y);
+                    doc.setFont('helvetica', 'normal');
+                    y += 10;
+                }
+                // Add task if it's selected
+                if (report.tasks.includes(task)) {
+                    if (y > 270) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                    doc.text(`- ${task}`, 30, y); // Indent tasks under section headers
+                    y += 7;
+                }
             });
             y += 10;
 
