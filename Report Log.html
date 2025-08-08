@@ -217,6 +217,10 @@
             gap: 16px;
             margin-bottom: 16px;
         }
+        .filter-container select {
+            flex: 1;
+            min-width: 120px;
+        }
         .button-container {
             display: flex;
             justify-content: center;
@@ -746,8 +750,8 @@
             const doc = new jsPDF();
             let y = 20;
 
-            // Use Helvetica font (default in jsPDF)
-            doc.setFont('Helvetica', 'normal');
+            // Set Helvetica font
+            doc.setFont('helvetica', 'normal');
 
             // Add title
             doc.setFontSize(16);
