@@ -769,7 +769,7 @@
             doc.text(`Submission Date: ${report.submissionDate}`, 20, y);
             y += 10;
 
-            // Add tasks with check mark symbol for completed tasks
+            // Add tasks with dash symbol for completed tasks
             doc.text("Tasks:", 20, y);
             y += 7;
             report.tasks.forEach(task => {
@@ -777,7 +777,7 @@
                     doc.addPage();
                     y = 20;
                 }
-                doc.text(`✓ ${task}`, 25, y);
+                doc.text(`- ${task}`, 25, y);
                 y += 7;
             });
             y += 10;
