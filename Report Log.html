@@ -853,9 +853,11 @@
             y += submissionDateLines.length * 7 + 10;
 
             // Add tasks with section headers
+            doc.setFont('helvetica', 'bold');
             doc.text("Tasks:", 20, y);
+            doc.setFont('helvetica', 'normal');
             y += 10;
-            report.tasks.forEach(task => {
+            tasks.forEach(task => {
                 // Check for page break before adding section header
                 if (y > 270) {
                     doc.addPage();
@@ -878,21 +880,25 @@
                     doc.setFont('helvetica', 'normal');
                     y += 10;
                 }
-                // Add task if it's selected
-                if (report.tasks.includes(task)) {
-                    if (y > 270) {
-                        doc.addPage();
-                        y = 20;
-                    }
-                    const taskLines = doc.splitTextToSize(`- ${task}`, maxWidth);
-                    doc.text(taskLines, 30, y); // Indent tasks under section headers
-                    y += taskLines.length * 7;
+                // Add task (checked or unchecked)
+                if (y > 270) {
+                    doc.addPage();
+                    y = 20;
                 }
+                const prefix = report.tasks.includes(task) ? '-' : 'X';
+                const textColor = report.tasks.includes(task) ? [0, 0, 0] : [255, 0, 0]; // Black for checked, red for unchecked
+                doc.setTextColor(...textColor);
+                const taskLines = doc.splitTextToSize(`${prefix} ${task}`, maxWidth);
+                doc.text(taskLines, 30, y); // Indent tasks under section headers
+                doc.setTextColor(0, 0, 0); // Reset to black
+                y += taskLines.length * 7;
             });
             y += 10;
 
             // Add comments
+            doc.setFont('helvetica', 'bold');
             doc.text("Comments:", 20, y);
+            doc.setFont('helvetica', 'normal');
             y += 7;
             const commentsLines = parseContentForPDF(report.comments);
             commentsLines.forEach(line => {
@@ -910,7 +916,9 @@
             y += 10;
 
             // Add notes
+            doc.setFont('helvetica', 'bold');
             doc.text("Notes:", 20, y);
+            doc.setFont('helvetica', 'normal');
             y += 7;
             const notesLines = parseContentForPDF(report.notes);
             notesLines.forEach(line => {
@@ -928,7 +936,9 @@
             y += 10;
 
             // Add needs follow-up
+            doc.setFont('helvetica', 'bold');
             doc.text("Needs Follow Up:", 20, y);
+            doc.setFont('helvetica', 'normal');
             y += 7;
             const followUpLines = parseContentForPDF(report.needsFollowUp);
             followUpLines.forEach(line => {
