@@ -893,7 +893,10 @@
                 doc.setTextColor(0, 0, 0); // Reset to black
                 y += taskLines.length * 7;
             });
-            y += 10;
+
+            // Force page break before Comments
+            doc.addPage();
+            y = 20;
 
             // Add comments
             doc.setFont('helvetica', 'bold');
