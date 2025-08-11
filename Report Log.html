@@ -826,25 +826,31 @@
         function generatePDF(report) {
             const doc = new jsPDF();
             let y = 20;
+            const maxWidth = 160; // Fits within 20mm left and 30mm right margins (A4 width = 210mm)
 
             // Set Helvetica font
             doc.setFont('helvetica', 'normal');
 
             // Add title
             doc.setFontSize(16);
-            doc.text(`${report.millLocation} ${report.visitDate} Report`, 105, y, { align: "center" });
-            y += 10;
+            const titleLines = doc.splitTextToSize(`${report.millLocation} ${report.visitDate} Report`, maxWidth);
+            doc.text(titleLines, 105, y, { align: "center" });
+            y += titleLines.length * 7 + 3;
 
             // Add report details
             doc.setFontSize(10);
-            doc.text(`Creator: ${report.creatorName || 'Unknown'}`, 20, y);
-            y += 7;
-            doc.text(`Visit Date: ${report.visitDate || 'N/A'}`, 20, y);
-            y += 7;
-            doc.text(`Location: ${report.millLocation || 'N/A'}`, 20, y);
-            y += 7;
-            doc.text(`Submission Date: ${report.submissionDate}`, 20, y);
-            y += 10;
+            const creatorLines = doc.splitTextToSize(`Creator: ${report.creatorName || 'Unknown'}`, maxWidth);
+            doc.text(creatorLines, 20, y);
+            y += creatorLines.length * 7;
+            const visitDateLines = doc.splitTextToSize(`Visit Date: ${report.visitDate || 'N/A'}`, maxWidth);
+            doc.text(visitDateLines, 20, y);
+            y += visitDateLines.length * 7;
+            const locationLines = doc.splitTextToSize(`Location: ${report.millLocation || 'N/A'}`, maxWidth);
+            doc.text(locationLines, 20, y);
+            y += locationLines.length * 7;
+            const submissionDateLines = doc.splitTextToSize(`Submission Date: ${report.submissionDate}`, maxWidth);
+            doc.text(submissionDateLines, 20, y);
+            y += submissionDateLines.length * 7 + 10;
 
             // Add tasks with section headers
             doc.text("Tasks:", 20, y);
@@ -878,8 +884,9 @@
                         doc.addPage();
                         y = 20;
                     }
-                    doc.text(`- ${task}`, 30, y); // Indent tasks under section headers
-                    y += 7;
+                    const taskLines = doc.splitTextToSize(`- ${task}`, maxWidth);
+                    doc.text(taskLines, 30, y); // Indent tasks under section headers
+                    y += taskLines.length * 7;
                 }
             });
             y += 10;
@@ -895,8 +902,10 @@
                 }
                 const isBullet = line.startsWith('•');
                 const xPos = isBullet ? 30 : 25; // Indent bullet points
-                doc.text(line, xPos, y);
-                y += 7;
+                const textToRender = isBullet ? line : line; // Preserve bullet symbol
+                const splitLines = doc.splitTextToSize(textToRender, maxWidth);
+                doc.text(splitLines, xPos, y);
+                y += splitLines.length * 7;
             });
             y += 10;
 
@@ -911,8 +920,10 @@
                 }
                 const isBullet = line.startsWith('•');
                 const xPos = isBullet ? 30 : 25; // Indent bullet points
-                doc.text(line, xPos, y);
-                y += 7;
+                const textToRender = isBullet ? line : line; // Preserve bullet symbol
+                const splitLines = doc.splitTextToSize(textToRender, maxWidth);
+                doc.text(splitLines, xPos, y);
+                y += splitLines.length * 7;
             });
             y += 10;
 
@@ -927,8 +938,10 @@
                 }
                 const isBullet = line.startsWith('•');
                 const xPos = isBullet ? 30 : 25; // Indent bullet points
-                doc.text(line, xPos, y);
-                y += 7;
+                const textToRender = isBullet ? line : line; // Preserve bullet symbol
+                const splitLines = doc.splitTextToSize(textToRender, maxWidth);
+                doc.text(splitLines, xPos, y);
+                y += splitLines.length * 7;
             });
 
             return doc;
