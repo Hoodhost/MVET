@@ -529,17 +529,17 @@
                         <button type="button" onclick="formatText('bold', 'editNotes')"><b>B</b></button>
                         <button type="button" onclick="formatText('italic', 'editNotes')"><i>I</i></button>
                         <button type="button" onclick="formatText('underline', 'editNotes')"><u>U</u></button>
-                        <button type="button" onclick="formatText('insertUnorderedList', 'notes')">• List</button>
+                        <button type="button" onclick="formatText('insertUnorderedList', 'editNotes')">• List</button>
                     </div>
                     <div id="editNotes" class="editable" contenteditable="true"></div>
                 </div>
                 <div class="mt-4">
                     <label for="editNeedsFollowUp" class="block font-medium">Needs Follow Up:</label>
                     <div class="toolbar">
-                        <button type="button" onclick="formatText('bold', 'needsFollowUp')"><b>B</b></button>
-                        <button type="button" onclick="formatText('italic', 'needsFollowUp')"><i>I</i></button>
-                        <button type="button" onclick="formatText('underline', 'needsFollowUp')"><u>U</u></button>
-                        <button type="button" onclick="formatText('insertUnorderedList', 'needsFollowUp')">• List</button>
+                        <button type="button" onclick="formatText('bold', 'editNeedsFollowUp')"><b>B</b></button>
+                        <button type="button" onclick="formatText('italic', 'editNeedsFollowUp')"><i>I</i></button>
+                        <button type="button" onclick="formatText('underline', 'editNeedsFollowUp')"><u>U</u></button>
+                        <button type="button" onclick="formatText('insertUnorderedList', 'editNeedsFollowUp')">• List</button>
                     </div>
                     <div id="editNeedsFollowUp" class="editable" contenteditable="true"></div>
                 </div>
@@ -621,6 +621,44 @@
             "Removed all equipment from the vehicle upon returning to the office",
             "Took the vehicle to the carwash to remove mud or other buildup from the vehicle"
         ];
+
+        // Helper function to parse HTML content and preserve bullet points
+        function parseContentForPDF(htmlContent) {
+            if (!htmlContent || htmlContent.trim() === '') return ['None'];
+
+            // Create a temporary DOM element to parse HTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(`<div>${htmlContent}</div>`, 'text/html');
+            const lines = [];
+
+            // Function to process nodes recursively
+            function processNode(node) {
+                if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+                    // Handle text nodes
+                    lines.push(node.textContent.trim());
+                } else if (node.nodeName === 'LI') {
+                    // Handle list items with bullet prefix
+                    const text = node.textContent.trim();
+                    if (text) lines.push(`• ${text}`);
+                } else if (node.nodeName === 'UL') {
+                    // Process each <li> inside <ul>
+                    Array.from(node.children).forEach(child => {
+                        if (child.nodeName === 'LI') {
+                            processNode(child);
+                        }
+                    });
+                } else {
+                    // Process other elements' children
+                    Array.from(node.childNodes).forEach(child => processNode(child));
+                }
+            }
+
+            // Start processing from the root div
+            Array.from(doc.body.firstChild.childNodes).forEach(node => processNode(node));
+
+            // Return lines, ensuring at least 'None' if empty
+            return lines.length > 0 ? lines : ['None'];
+        }
 
         // Text formatting function
         function formatText(command, elementId) {
@@ -749,7 +787,7 @@
                             <p><strong>Visit Date:</strong> ${report.visitDate || 'N/A'}</p>
                             <p><strong>Location:</strong> ${report.millLocation || 'N/A'}</p>
                             <p><strong>Submission Date:</strong> ${report.submissionDate}</p>
-                            <p><strong>Needs Follow Up:</strong> ${report.needsFollowUp ? report.needsFollowUp.replace(/<\/?[^>]+(>|$)/g, "") : 'None'}</p>
+                            <p><strong>Needs Follow Up:</strong> ${report.needsFollowUp ? parseContentForPDF(report.needsFollowUp).join(' ') : 'None'}</p>
                             <div class="mt-2 space-x-2">
                                 <button class="viewBtn" data-id="${report.id}">View</button>
                                 <button class="editBtn" data-id="${report.id}">Edit</button>
@@ -849,14 +887,15 @@
             // Add comments
             doc.text("Comments:", 20, y);
             y += 7;
-            const commentsText = report.comments ? report.comments.replace(/<\/?[^>]+(>|$)/g, "") : 'None';
-            const commentsLines = doc.splitTextToSize(commentsText, 170);
+            const commentsLines = parseContentForPDF(report.comments);
             commentsLines.forEach(line => {
                 if (y > 270) {
                     doc.addPage();
                     y = 20;
                 }
-                doc.text(line, 25, y);
+                const isBullet = line.startsWith('•');
+                const xPos = isBullet ? 30 : 25; // Indent bullet points
+                doc.text(line, xPos, y);
                 y += 7;
             });
             y += 10;
@@ -864,14 +903,15 @@
             // Add notes
             doc.text("Notes:", 20, y);
             y += 7;
-            const notesText = report.notes ? report.notes.replace(/<\/?[^>]+(>|$)/g, "") : 'None';
-            const notesLines = doc.splitTextToSize(notesText, 170);
+            const notesLines = parseContentForPDF(report.notes);
             notesLines.forEach(line => {
                 if (y > 270) {
                     doc.addPage();
                     y = 20;
                 }
-                doc.text(line, 25, y);
+                const isBullet = line.startsWith('•');
+                const xPos = isBullet ? 30 : 25; // Indent bullet points
+                doc.text(line, xPos, y);
                 y += 7;
             });
             y += 10;
@@ -879,14 +919,15 @@
             // Add needs follow-up
             doc.text("Needs Follow Up:", 20, y);
             y += 7;
-            const followUpText = report.needsFollowUp ? report.needsFollowUp.replace(/<\/?[^>]+(>|$)/g, "") : 'None';
-            const followUpLines = doc.splitTextToSize(followUpText, 170);
+            const followUpLines = parseContentForPDF(report.needsFollowUp);
             followUpLines.forEach(line => {
                 if (y > 270) {
                     doc.addPage();
                     y = 20;
                 }
-                doc.text(line, 25, y);
+                const isBullet = line.startsWith('•');
+                const xPos = isBullet ? 30 : 25; // Indent bullet points
+                doc.text(line, xPos, y);
                 y += 7;
             });
 
