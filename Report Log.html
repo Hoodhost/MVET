@@ -394,8 +394,8 @@
                         Refilled Gas if the IT Vehicle was below half full
                     </label>
                     <label class="flex items-center">
-                        <input type="checkbox" name="tasks" value="Performed upkeep for general cleanliness in the vehicle such as removing trash or food debris" class="mr-2">
-                        Performed upkeep for general cleanliness in the vehicle such as removing trash or food debris
+                        <input type="checkbox" name="tasks" value="Confirmed the vehicle was above half a tank of fuel and refilled it if it was not" class="mr-2">
+                        Confirmed the vehicle was above half a tank of fuel and refilled it if it was not
                     </label>
                     <label class="flex items-center">
                         <input type="checkbox" name="tasks" value="Removed all equipment from the vehicle upon returning to the office" class="mr-2">
@@ -436,6 +436,16 @@
                         <button type="button" onclick="formatText('insertUnorderedList', 'needsFollowUp')">• List</button>
                     </div>
                     <div id="needsFollowUp" class="editable" contenteditable="true"></div>
+                </div>
+                <div class="mt-4">
+                    <label for="vehicleStatus" class="block font-medium">Vehicle Status:</label>
+                    <div class="toolbar">
+                        <button type="button" onclick="formatText('bold', 'vehicleStatus')"><b>B</b></button>
+                        <button type="button" onclick="formatText('italic', 'vehicleStatus')"><i>I</i></button>
+                        <button type="button" onclick="formatText('underline', 'vehicleStatus')"><u>U</u></button>
+                        <button type="button" onclick="formatText('insertUnorderedList', 'vehicleStatus')">• List</button>
+                    </div>
+                    <div id="vehicleStatus" class="editable" contenteditable="true"></div>
                 </div>
                 <div class="mt-4 flex justify-end space-x-2">
                     <button type="button" id="cancelBtn">Cancel</button>
@@ -543,6 +553,16 @@
                     </div>
                     <div id="editNeedsFollowUp" class="editable" contenteditable="true"></div>
                 </div>
+                <div class="mt-4">
+                    <label for="editVehicleStatus" class="block font-medium">Vehicle Status:</label>
+                    <div class="toolbar">
+                        <button type="button" onclick="formatText('bold', 'editVehicleStatus')"><b>B</b></button>
+                        <button type="button" onclick="formatText('italic', 'editVehicleStatus')"><i>I</i></button>
+                        <button type="button" onclick="formatText('underline', 'editVehicleStatus')"><u>U</u></button>
+                        <button type="button" onclick="formatText('insertUnorderedList', 'editVehicleStatus')">• List</button>
+                    </div>
+                    <div id="editVehicleStatus" class="editable" contenteditable="true"></div>
+                </div>
                 <div class="mt-4 flex justify-end space-x-2">
                     <button type="button" id="editCancelBtn">Cancel</button>
                     <button type="button" id="editDeleteBtn">Delete</button>
@@ -588,7 +608,7 @@
             "Create/Update Tech Support tickets in Freshservice",
             "Send communications for follow-up issues",
             "Refilled Gas if the IT Vehicle was below half full",
-            "Performed upkeep for general cleanliness in the vehicle such as removing trash or food debris",
+            "Confirmed the vehicle was above half a tank of fuel and refilled it if it was not",
             "Removed all equipment from the vehicle upon returning to the office",
             "Took the vehicle to the carwash to remove mud or other buildup from the vehicle"
         ];
@@ -617,7 +637,7 @@
             "Create/Update Tech Support tickets in Freshservice",
             "Send communications for follow-up issues",
             "Refilled Gas if the IT Vehicle was below half full",
-            "Performed upkeep for general cleanliness in the vehicle such as removing trash or food debris",
+            "Confirmed the vehicle was above half a tank of fuel and refilled it if it was not",
             "Removed all equipment from the vehicle upon returning to the office",
             "Took the vehicle to the carwash to remove mud or other buildup from the vehicle"
         ];
@@ -671,7 +691,7 @@
         document.getElementById('createReportBtn').addEventListener('click', () => {
             document.getElementById('reportFormContainer').classList.remove('hidden');
             document.getElementById('createReportBtn').classList.add('hidden');
-            document.getElementById('logContainer').classList.remove('hidden');
+            document.getElementById('logContainer').classList.add('hidden'); // Hide log when form is opened
             hideView();
             hideError();
             hideShareMessage();
@@ -680,7 +700,7 @@
         document.getElementById('cancelBtn').addEventListener('click', () => {
             document.getElementById('reportFormContainer').classList.add('hidden');
             document.getElementById('createReportBtn').classList.remove('hidden');
-            document.getElementById('logContainer').classList.remove('hidden');
+            document.getElementById('logContainer').classList.remove('hidden'); // Show log when form is cancelled
             document.getElementById('reportForm').reset();
             document.querySelectorAll('.editable').forEach(el => el.innerHTML = '');
             hideError();
@@ -705,6 +725,7 @@
                 const comments = document.getElementById('comments').innerHTML.trim();
                 const notes = document.getElementById('notes').innerHTML.trim();
                 const needsFollowUp = document.getElementById('needsFollowUp').innerHTML.trim();
+                const vehicleStatus = document.getElementById('vehicleStatus').innerHTML.trim();
 
                 if (!creatorName || !visitDate || !millLocation) {
                     showError('Please fill in all required fields.');
@@ -720,6 +741,7 @@
                     comments,
                     notes,
                     needsFollowUp,
+                    vehicleStatus,
                     submissionDate: new Date().toLocaleString()
                 };
 
@@ -957,6 +979,32 @@
                 y += splitLines.length * 7;
             });
 
+            // Add vehicle status (only if non-empty)
+            if (report.vehicleStatus && report.vehicleStatus.trim()) {
+                y += 10;
+                if (y > 270) {
+                    doc.addPage();
+                    y = 20;
+                }
+                doc.setFont('helvetica', 'bold');
+                doc.text("Vehicle Status:", 20, y);
+                doc.setFont('helvetica', 'normal');
+                y += 7;
+                const vehicleStatusLines = parseContentForPDF(report.vehicleStatus);
+                vehicleStatusLines.forEach(line => {
+                    if (y > 270) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                    const isBullet = line.startsWith('•');
+                    const xPos = isBullet ? 30 : 25; // Indent bullet points
+                    const textToRender = isBullet ? line : line; // Preserve bullet symbol
+                    const splitLines = doc.splitTextToSize(textToRender, maxWidth);
+                    doc.text(splitLines, xPos, y);
+                    y += splitLines.length * 7;
+                });
+            }
+
             return doc;
         }
 
@@ -1007,7 +1055,12 @@
                     <div class="mt-4">
                         <p><strong>Needs Follow Up:</strong></p>
                         <div class="p-2 border rounded bg-gray-50">${report.needsFollowUp || 'None'}</div>
-                    </div>`;
+                    </div>` +
+                    (report.vehicleStatus && report.vehicleStatus.trim() ? 
+                        `<div class="mt-4">
+                            <p><strong>Vehicle Status:</strong></p>
+                            <div class="p-2 border rounded bg-gray-50">${report.vehicleStatus}</div>
+                        </div>` : '');
 
                 // Show read-only view and hide log
                 document.getElementById('viewReportContainer').classList.remove('hidden');
@@ -1098,6 +1151,7 @@
                 document.getElementById('editComments').innerHTML = report.comments || '';
                 document.getElementById('editNotes').innerHTML = report.notes || '';
                 document.getElementById('editNeedsFollowUp').innerHTML = report.needsFollowUp || '';
+                document.getElementById('editVehicleStatus').innerHTML = report.vehicleStatus || '';
                 const editFormTasks = document.getElementById('editFormTasks');
                 let taskHtml = '';
                 tasks.forEach(task => {
@@ -1143,6 +1197,7 @@
                 const comments = document.getElementById('editComments').innerHTML.trim();
                 const notes = document.getElementById('editNotes').innerHTML.trim();
                 const needsFollowUp = document.getElementById('editNeedsFollowUp').innerHTML.trim();
+                const vehicleStatus = document.getElementById('editVehicleStatus').innerHTML.trim();
 
                 if (!creatorName || !visitDate || !millLocation) {
                     showError('Please fill in all required fields.');
@@ -1153,7 +1208,7 @@
                 const reports = JSON.parse(localStorage.getItem('reports') || '[]');
                 const updatedReports = reports.map(report => {
                     if (report.id === id) {
-                        return { ...report, creatorName, visitDate, millLocation, tasks: selectedTasks, comments, notes, needsFollowUp, submissionDate: new Date().toLocaleString() };
+                        return { ...report, creatorName, visitDate, millLocation, tasks: selectedTasks, comments, notes, needsFollowUp, vehicleStatus, submissionDate: new Date().toLocaleString() };
                     }
                     return report;
                 });
