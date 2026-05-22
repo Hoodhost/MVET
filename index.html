@@ -205,11 +205,12 @@
             const dayOfWeek = new Intl.DateTimeFormat('en-US', options).format(dateObj);
             const formattedDate = `${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getDate().toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
 
-            const emailBody = `Dear ${millLocation} Employees,%0D%0A%0D%0A` +
-                `I will be visiting the mill on ${dayOfWeek}, ${formattedDate} during the ${time} hours.%0D%0A%0D%0A` +
-                `Please let me know if there are any technical issues/requests related to IT, I will be taking care of those during that time.%0D%0A%0D%0A` +
-                `<strong>A quick note for HR members:</strong> If you have any new users starting within the next two weeks who will require hardware, please let me know as soon as possible so we can ensure everything is configured and ready on-site for them. %0D%0A%0D%0A` +
-                `Please email me directly or email hoodit@hoodindustries.com to create a ticket automatically.`;
+           const emailBody = `Dear ${millLocation} Employees,%0D%0A%0D%0A` +
+    `I will be visiting the mill on ${dayOfWeek}, ${formattedDate} during the ${time} hours.%0D%0A%0D%0A` +
+    `Please let me know if there are any technical issues/requests related to IT, I will be taking care of those during that time.%0D%0A%0D%0A` +
+    `*** ATTENTION HR MEMBERS: ***%0D%0A` + // Uses symbols and caps for visual break
+    `If you have any new users starting within the next two weeks who will require hardware, please let me know as soon as possible so we can ensure everything is configured and ready on-site for them. %0D%0A%0D%0A` +
+    `Please email me directly or email hoodit@hoodindustries.com to create a ticket automatically.`;
 
             const to = recipientMap[recipient];
             const bcc = `Nestess@hoodindustries.com,agarcia@hoodindustries.com,ralexand@hoodindustries.com,${bccMap[millLocation]}`;
